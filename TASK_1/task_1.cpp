@@ -18,39 +18,39 @@ void init_warehouse(std::map<std::string, std::pair<std::string, int>>& warehous
 
 void add_item(std::map<std::string, std::pair<std::string, int>>& warehouse, const std::string& name, int quantity, const std::string& address) {
     if (warehouse.find(address) == warehouse.end()) {
-        std::cout << "Ошибка: Ячейка " << address << " не существует\n";
+        std::cout << "\nОшибка: Ячейка " << address << " не существует\n\n";
         return;
     }
     auto& add = warehouse[address];
     if (!add.first.empty() && add.first != name) {
-        std::cout << "Ошибка: Ячейка " << address << " занята товаром " << add.first << "\n";
+        std::cout << "\nОшибка: Ячейка " << address << " занята товаром " << add.first << "\n\n";
         return;
     }
     if (add.second + quantity > 10) {
-        std::cout << "Ошибка: Превышена вместимость ячейки (максимум 10)\n";
+        std::cout << "\nОшибка: Превышена вместимость ячейки (максимум 10)\n\n";
         return;
     }
     add.first = name;
     add.second += quantity;
-    std::cout << "Добавлено " << quantity << " " << name << " в " << address << "\n";
+    std::cout << "\nДобавлено " << quantity << " " << name << " в " << address << "\n\n";
 }
 
 void remove_item(std::map<std::string, std::pair<std::string, int>>& warehouse, const std::string& name, int quantity, const std::string& address) {
     if (warehouse.find(address) == warehouse.end()) {
-        std::cout << "Ошибка: Ячейка " << address << " не существует\n";
+        std::cout << "\nОшибка: Ячейка " << address << " не существует\n\n";
         return;
     }
     auto& remove = warehouse[address];
     if (remove.first.empty() || remove.first != name) {
-        std::cout << "Ошибка: Товар " << name << " не найден в ячейке " << address << "\n";
+        std::cout << "\nОшибка: Товар " << name << " не найден в ячейке " << address << "\n\n";
         return;
     }
     if (remove.second < quantity) {
-        std::cout << "Ошибка: Недостаточно товаров для удаления\n";
+        std::cout << "\nОшибка: Недостаточно товаров для удаления\n\n";
         return;
     }
     remove.second -= quantity;
-    std::cout << "Удалено " << quantity << " " << name << " (остаток: " << remove.second << ")\n";
+    std::cout << "\nУдалено " << quantity << " " << name << " (остаток: " << remove.second << ")\n\n";
     if (remove.second == 0) remove.first = "";
 }
 
@@ -68,7 +68,7 @@ void print_info(const std::map<std::string, std::pair<std::string, int>>& wareho
 
     double load_percent = (occupied_units / 2850.0) * 100.0;
 
-    std::cout << "\n Состояние склада:\n";
+    std::cout << "\nСостояние склада:\n";
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "Загруженность склада: " << load_percent << "%\n";
     std::cout << "Загруженность зоны А: " << load_percent << "%\n";
@@ -77,7 +77,7 @@ void print_info(const std::map<std::string, std::pair<std::string, int>>& wareho
     bool has_items = false;
     for (const auto& [addr, item] : warehouse) {
         if (!item.first.empty()) {
-            std::cout << addr << ": " << item.first << " " << item.second << "\n";
+            std::cout << addr << ": " << item.first << " (" << item.second << ")\n";
             has_items = true;
         }
     }

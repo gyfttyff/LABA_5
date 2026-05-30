@@ -1,5 +1,6 @@
 #include "task_1.h"
 #include <vector>
+#include <limits>
 #include <string>
 
 int main() {
@@ -9,8 +10,8 @@ int main() {
     std::string command;
     const std::vector<std::string> valid_commands = {"ADD", "REMOVE", "INFO", "EXIT"};
 
-    while (command == "ADD" || command == "REMOVE" || command == "INFO") {
-        std::cout << ">>> ";
+    while (true) {
+        std::cout << "Введите команду (ADD, REMOVE, INFO, EXIT)>>> " << std::flush;
         std::cin >> command;
 
         bool is_valid = false;
@@ -20,7 +21,13 @@ int main() {
                 break;
             }
         }
-        if (!is_valid) continue;
+        
+        if (!is_valid){
+            std::cout << "Введите корректную команду! \n";
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            continue;
+        }
+        
         if (command == "EXIT") break;
 
         if (command == "ADD") {
