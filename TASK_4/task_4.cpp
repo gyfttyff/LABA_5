@@ -9,78 +9,35 @@ Cmd parse_cmd(const std::string& s) {
 }
 
 int get_days_in_month(int month) {
-    switch (month) {
-        case 2:  return 28; // Февраль
-        case 4:  return 30; // Апрель
-        case 6:  return 30; // Июнь
-        case 8:  return 30; // Август
-        case 10: return 30; // Октябрь
-        case 12: return 30; // Декабрь
-        default: return 31; // Остальные (31 день)
-    }
+    if (month == 2) return 28;
+    if (month == 4 || month == 6 || month == 8 || month == 10 || month == 12) return 30;
+    return 31;
 }
 
 void add_class(std::map<int, std::vector<std::string>>& schedule, int day, const std::string& subject) {
-   
-    if (day < 1 || day > 31) {
-        std::cout << "Ошибка: Неверный день (должен быть 1-31)\n";
-        return;
-    }
-    
-    // Добавляем предмет в день
+    if (day < 1 || day > 31) { std::cout << "Ошибка: Неверный день\n"; return; }
     schedule[day].push_back(subject);
-    std::cout << "Добавлена дисциплина " << subject << " на день " << day << "\n";
+    std::cout << "Добавлено: " << subject << " на " << day << "\n";
 }
 
 void next_month(std::map<int, std::vector<std::string>>& schedule, int& current_month) {
-    // Переход на следующий месяц
     current_month++;
-    if (current_month > 12) {
-        current_month = 1; // Новый год
-    }
-    
-    int daysmon = get_days_in_month(current_month);
-    std::cout << "Переход на месяц " << current_month 
-              << " (дней: " << daysmon << ")\n";
-    
-    // Создаем новое расписание для следующего месяца
-    std::map<int, std::vector<std::string>> new_schedule;
-    
+    if (current_month > 12) current_month = 1;
+    int limit = get_days_in_month(current_month);
+    std::map<int, std::vector<std::string>> next_schedule;
     for (const auto& [day, subjects] : schedule) {
-        int new_day = day;
-        
-        // Если день выходит за пределы нового месяца → переносим на последний день
-        if (day > daysmon) {
-            new_day = daysmon;
-            std::cout << "День " << day << " перенесен на " << new_day << "\n";
-        }
-        
-        // Копируем все предметы в новый день
-        for (const auto& subject : subjects) {
-            new_schedule[new_day].push_back(subject);
-        }
+        int new_day = (day > limit) ? limit : day;
+        for (const auto& subj : subjects) next_schedule[new_day].push_back(subj);
     }
-    
-    // Заменяем старое расписание новым
-    schedule = new_schedule;
+    schedule = next_schedule;
+    std::cout << "Месяц " << current_month << " (дней: " << limit << ")\n";
 }
 
 void view_day(const std::map<int, std::vector<std::string>>& schedule, int day) {
-    // Проверяем, есть ли записи на этот день
     auto it = schedule.find(day);
-    
-    if (schedule.find(day) == schedule.end() || it->second.empty()) {
-        std::cout << "В день " << day << " мы свободны!\n";
-        return;
-    }
-    
-    // Выводим все дисциплины дня
-    std::cout << "В день " << day << " занятия в университете: ";
+    if (it == schedule.end() || it->second.empty()) { std::cout << "День " << day << ": свободно\n"; return; }
+    std::cout << "День " << day << ": ";
     bool first = true;
-    for (const auto& subject : it->second) {
-        if (!first) std::cout << ", ";
-        std::cout << subject;
-        first = false;
-    }
+    for (const auto& subj : it->second) { if (!first) std::cout << ", "; std::cout << subj; first = false; }
     std::cout << "\n";
 }

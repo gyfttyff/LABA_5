@@ -9,102 +9,57 @@ Type parse_type(const std::string& s) {
     return Type::UNKNOWN;
 }
 
-void create_plane(std::map<std::string, std::vector<std::string>>& db, const std::string& name, const std::vector<std::string>& route) {
-    // Проверка на дубликат самолета
-    if (db.find(name) != db.end()) {
-        std::cout << "Ошибка: Самолет " << name << " уже создан\n";
-        return;
-    }
-
-    // Проверка количества городов (должно быть >= 2)
-    if (route.size() < 2) {
-        std::cout << "Ошибка: Самолет не может быть создан с менее чем 2 городами\n";
-        return;
-    }
-
-    // Проверка на дубликаты городов в маршруте
+void create_plane(std::map<std::string, Plane>& db, const std::string& name, const std::vector<std::string>& route) {
+    if (db.find(name) != db.end()) { std::cout << "Ошибка: Самолет уже создан\n"; return; }
+    if (route.size() < 2) { std::cout << "Ошибка: Минимум 2 города\n"; return; }
     std::set<std::string> unique(route.begin(), route.end());
-    if (unique.size() != route.size()) {
-        std::cout << "Ошибка: Самолет не может быть создан с повторяющимися городами\n";
-        return;
-    }
-
-    // Если всё ок 
-    db[name] = route;
+    if (unique.size() != route.size()) { std::cout << "Ошибка: Повторяющиеся города\n"; return; }
+    db[name] = {route};
     std::cout << "Самолет " << name << " создан\n";
 }
 
-void planes_for_town(const std::map<std::string, std::vector<std::string>>& db, 
-                     const std::string& town) {
-    std::vector<std::string> found_planes;
-    
-    // Ищем, у кого в маршруте есть этот город
-    for (const auto& [plane, route] : db) {
-        for (const auto& t : route) {
-            if (t == town) {
-                found_planes.push_back(plane);
-                break; // Город найден, переходим к следующему самолету
-            }
+void planes_for_town(const std::map<std::string, Plane>& db, const std::string& town) {
+    std::vector<std::string> found;
+    for (const auto& [plane_name, plane] : db) {
+        for (const auto& t : plane.route) {
+            if (t == town) { found.push_back(plane_name); break; }
         }
     }
-
-    if (found_planes.empty()) {
-        std::cout << "Ошибка: Город " << town << " не найден\n";
-    } else {
+    if (found.empty()) std::cout << "Ошибка: Город не найден\n";
+    else {
         std::cout << "Самолеты через " << town << ": ";
-        for (const auto& p : found_planes) std::cout << p << ", ";
+        bool first = true;
+        for (const auto& p : found) { if (!first) std::cout << ", "; std::cout << p; first = false; }
         std::cout << "\n";
     }
 }
 
-void towns_for_plane(const std::map<std::string, std::vector<std::string>>& db, 
-                     const std::string& plane) {
-    // Проверяем, существует ли самолет
-    if (db.find(plane) == db.end()) {
-        std::cout << "Ошибка: Самолет " << plane << " не найден\n";
-        return;
-    }
-
-    std::cout << "Города самолета " << plane << ":\n";
-    const std::vector<std::string>& route = db.at(plane);
-
+void towns_for_plane(const std::map<std::string, Plane>& db, const std::string& plane_name) {
+    if (db.find(plane_name) == db.end()) { std::cout << "Ошибка: Самолет не найден\n"; return; }
+    const std::vector<std::string>& route = db.at(plane_name).route;
+    std::cout << "Города самолета " << plane_name << ": ";
+    bool first = true;
+    for (const auto& town : route) { if (!first) std::cout << " "; std::cout << town; first = false; }
+    std::cout << "\n";
     for (const auto& town : route) {
         std::cout << town << ": ";
-        std::vector<std::string> other_planes;
-        
-        // Ищем другие самолеты, летящие через этот город
-        for (const auto& [p, r] : db) {
-            if (p == plane) continue; // Пропускаем самого себя
-            
-            for (const auto& t : r) {
-                if (t == town) {
-                    other_planes.push_back(p);
-                    break;
-                }
-            }
+        std::vector<std::string> others;
+        for (const auto& [p_name, p_data] : db) {
+            if (p_name == plane_name) continue;
+            for (const auto& t : p_data.route) { if (t == town) { others.push_back(p_name); break; } }
         }
-
-        if (other_planes.empty()) std::cout << "-";
-        else {
-            bool first = true;
-            for (const auto& otpl : other_planes) {
-                if (!first) std::cout << ", ";
-                std::cout << otpl;
-                first = false;
-            }
-        }
+        if (others.empty()) std::cout << "-";
+        else { bool f = true; for (const auto& o : others) { if (!f) std::cout << ", "; std::cout << o; f = false; } }
         std::cout << "\n";
     }
 }
 
-void print_all(const std::map<std::string, std::vector<std::string>>& db) {
-    if (db.empty()) {
-        std::cout << "Ошибка: Самолеты не найдены\n";
-        return;
-    }
-    for (const auto& [plane, route] : db) {
-        std::cout << "Самолет " << plane << ": ";
-        for (const auto& t : route) std::cout << t << " ";
+void print_all(const std::map<std::string, Plane>& db) {
+    if (db.empty()) { std::cout << "Ошибка: Самолеты не найдены\n"; return; }
+    for (const auto& [plane_name, plane] : db) {
+        std::cout << "Самолет " << plane_name << ": ";
+        bool first = true;
+        for (const auto& t : plane.route) { if (!first) std::cout << " "; std::cout << t; first = false; }
         std::cout << "\n";
     }
 }

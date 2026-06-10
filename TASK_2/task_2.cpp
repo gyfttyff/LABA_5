@@ -1,70 +1,90 @@
 #include "task_2.h"
+#include <algorithm>
+#include <limits>
 
-void process_arrive(std::vector<std::vector<std::pair<std::string, int>>>& stacks, std::vector<int>& stack_weights, int max_weight, const std::string& id, int weight) {
-
-    bool placed = false;
+void process_arrive(std::vector<std::vector<std::pair<std::string, int>>>& stacks,
+                   std::vector<int>& stack_weights,
+                   int max_weight,
+                   const std::string& id,
+                   int weight) {
     
-    // Ищем первый стек, куда поместится контейнер
-    for (size_t i = 0; i < stacks.size(); ++i) {
-        if (stack_weights[i] + weight <= max_weight) {
-            stacks[i].push_back({id, weight});
-            stack_weights[i] += weight;
-            std::cout << "Контейнер " << id << " размещен в стек " << (i + 1) << "\n";
+    if (weight > max_weight) {
+        std::cout << "Ошибка: Вес контейнера " << id << " (" << weight 
+                  << " тонн) превышает максимальный размер стека (" 
+                  << max_weight << " тонн)" << std::endl;
+        return;
+    }
+    
+    bool placed = false;
+    size_t idx = 0;
+    
+    // Range-based for: ищем первый подходящий стек
+    for (auto& stack : stacks) {
+        if (stack_weights[idx] + weight <= max_weight) {
+            stack.push_back({id, weight});
+            stack_weights[idx] += weight;
+            std::cout << "Контейнер " << id << " размещен в стек " << (idx + 1) << std::endl;
             placed = true;
             break;
         }
+        idx++;
     }
     
-    // Если ни один стек не подошёл - создаём новый
+    // Если не нашли место - создаем новый стек
     if (!placed) {
         stacks.push_back({{id, weight}});
         stack_weights.push_back(weight);
-        std::cout << "Контейнер " << id << " размещен в стек " << stacks.size() << "\n";
+        std::cout << "Контейнер " << id << " размещен в стек " << stacks.size() << std::endl;
     }
 }
 
-void process_load(const std::vector<std::vector<std::pair<std::string, int>>>& stacks, int sections_count) {
-    // Создаём секции судна (изначально пустые)
+void process_load(const std::vector<std::vector<std::pair<std::string, int>>>& stacks,
+                 int sections_count) {
+    // Создаем секции
     std::vector<std::vector<std::string>> sections(sections_count);
     std::vector<int> section_weights(sections_count, 0);
     
-    // Собираем все контейнеры в порядке LIFO
+    // Собираем все контейнеры из всех стеков
     std::vector<std::pair<std::string, int>> all_containers;
-    for (int i = static_cast<int>(stacks.size()) - 1; i >= 0; --i) { //Внешний цикл: идём по стекам с последнего к первому
-        for (int j = static_cast<int>(stacks[i].size()) - 1; j >= 0; --j) { // Внутренний цикл: идём по контейнерам в стеке с вершины к основанию
-            all_containers.push_back(stacks[i][j]);
+    for (const auto& stack : stacks) {
+        for (const auto& container : stack) {
+            all_containers.push_back(container);
         }
     }
     
-    // Распределяем контейнеры по секциям
+    // Разворачиваем для LIFO 
+    std::reverse(all_containers.begin(), all_containers.end());
+    
+    // Распределяем по секциям с минимальным весом
     for (const auto& container : all_containers) {
         const std::string& id = container.first;
         int weight = container.second;
         
-        // Находим секцию с минимальным весом
+        // Ищем секцию с минимальным весом (range-based for с индексом)
         size_t best_section = 0;
-        for (size_t s = 1; s < sections.size(); ++s) {
-            if (section_weights[s] < section_weights[best_section]) {
-                best_section = s;
+        size_t current_idx = 0;
+        for (int w : section_weights) {
+            if (w < section_weights[best_section]) {
+                best_section = current_idx;
             }
+            current_idx++;
         }
         
-        // Добавляем контейнер в выбранную секцию
         sections[best_section].push_back(id);
         section_weights[best_section] += weight;
     }
     
     // Вывод результата
-    for (size_t s = 0; s < sections.size(); ++s) {
-        std::cout << "Секция " << (s + 1) << "(" << section_weights[s] << " тонн): ";
-        
+    size_t s = 0;
+    for (const auto& section : sections) {
+        std::cout << "Секция " << (s + 1) << " (" << section_weights[s] << " тонн): ";
         bool first = true;
-        for (const auto& id : sections[s]) {
+        for (const auto& id : section) {
             if (!first) std::cout << ", ";
             std::cout << id;
             first = false;
         }
-        std::cout << "\n";
+        std::cout << std::endl;
+        s++;
     }
-
 }

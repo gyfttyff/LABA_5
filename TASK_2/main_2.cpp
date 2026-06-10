@@ -2,17 +2,20 @@
 #include <vector>
 #include <string>
 #include <limits>
+#include <iostream>
 
 int main() {
     int max_stack_weight, sections_count;
     
-    std::cout << "Введите максимальный размер стека: >>> ";
+    std::cout << "Введите максимальный размер стека:" << std::endl;
+    std::cout << ">>> ";
     std::cin >> max_stack_weight;
     
-    std::cout << "Введите количество секций судна: >>> ";
+    std::cout << "Введите количество секций судна:" << std::endl;
+    std::cout << ">>> ";
     std::cin >> sections_count;
     
-    // Используем pair<id, weight>
+    // Стек: vector<pair<id, weight>>
     std::vector<std::vector<std::pair<std::string, int>>> stacks;
     std::vector<int> stack_weights;
     
@@ -20,9 +23,8 @@ int main() {
     const std::vector<std::string> valid_commands = {"ARRIVE", "LOAD", "EXIT"};
     
     while (true) {
-        std::cout << "Введите команду (ARRIVE, LOAD, EXIT)>>> ";
+        std::cout << ">>> ";
         if (!(std::cin >> command)) break;
-        
         
         // Валидация команды
         bool is_valid = false;
@@ -34,7 +36,7 @@ int main() {
         }
         
         if (!is_valid) {
-            std::cout << "Введите корректную команду (ARRIVE, LOAD, EXIT)!\n";
+            std::cout << "Введите корректную команду (ARRIVE, LOAD, EXIT)!" << std::endl;
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
         }
@@ -45,18 +47,17 @@ int main() {
             std::string id;
             int weight;
             if (!(std::cin >> id >> weight)) {
-                std::cout << "Ошибка формата. Введите: ARRIVE <id> <вес>\n";
+                std::cout << "Ошибка формата. Введите: ARRIVE <id> <вес>" << std::endl;
                 std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 continue;
             }
             process_arrive(stacks, stack_weights, max_stack_weight, id, weight);
-        } 
+        }
         else if (command == "LOAD") {
             process_load(stacks, sections_count);
         }
         
-        // Очищаем остаток строки
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     

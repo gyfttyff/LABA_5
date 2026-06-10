@@ -4,7 +4,7 @@
 #include <string>
 
 int main() {
-    std::map<std::string, std::pair<std::string, int>> warehouse;
+    std::map<std::string, Cell> warehouse;
     init_warehouse(warehouse);
 
     std::string command;
@@ -14,6 +14,7 @@ int main() {
         std::cout << "Введите команду (ADD, REMOVE, INFO, EXIT)>>> " << std::flush;
         std::cin >> command;
 
+        // Range-based for loop для валидации
         bool is_valid = false;
         for (const auto& cmd : valid_commands) {
             if (cmd == command) {
@@ -21,13 +22,11 @@ int main() {
                 break;
             }
         }
-        
         if (!is_valid){
-            std::cout << "Введите корректную команду! \n";
+            std::cout << "Введите корректную команду!\n";
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
         }
-        
         if (command == "EXIT") break;
 
         if (command == "ADD") {
